@@ -12,8 +12,8 @@ using Todean_Daiana_Lab2.Data;
 namespace Todean_Daiana_Lab2.Migrations
 {
     [DbContext(typeof(LibraryContext))]
-    [Migration("20231024155051_migration1")]
-    partial class migration1
+    [Migration("20231026144454_ExtendedModel")]
+    partial class ExtendedModel
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -54,11 +54,11 @@ namespace Todean_Daiana_Lab2.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
 
-                    b.Property<int>("AuthorID")
+                    b.Property<int?>("AuthorID")
                         .HasColumnType("int");
 
                     b.Property<decimal>("Price")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(6, 2)");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -106,11 +106,11 @@ namespace Todean_Daiana_Lab2.Migrations
                     b.Property<int>("BookID")
                         .HasColumnType("int");
 
-                    b.Property<int>("CostumerID")
-                        .HasColumnType("int");
-
                     b.Property<int>("CustomerID")
                         .HasColumnType("int");
+
+                    b.Property<DateTime?>("OrderDate")
+                        .HasColumnType("datetime2");
 
                     b.HasKey("OrderID");
 
@@ -121,13 +121,49 @@ namespace Todean_Daiana_Lab2.Migrations
                     b.ToTable("Order", (string)null);
                 });
 
+            modelBuilder.Entity("Todean_Daiana_Lab2.Models.PublishedBook", b =>
+                {
+                    b.Property<int>("BookID")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PublisherID")
+                        .HasColumnType("int");
+
+                    b.HasKey("BookID", "PublisherID");
+
+                    b.HasIndex("PublisherID");
+
+                    b.ToTable("PublishedBook", (string)null);
+                });
+
+            modelBuilder.Entity("Todean_Daiana_Lab2.Models.Publisher", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
+
+                    b.Property<string>("Adress")
+                        .IsRequired()
+                        .HasMaxLength(70)
+                        .HasColumnType("nvarchar(70)");
+
+                    b.Property<string>("PublisherName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("ID");
+
+                    b.ToTable("Publisher", (string)null);
+                });
+
             modelBuilder.Entity("Todean_Daiana_Lab2.Models.Book", b =>
                 {
                     b.HasOne("Todean_Daiana_Lab2.Models.Author", "Author")
                         .WithMany("Books")
-                        .HasForeignKey("AuthorID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("AuthorID");
 
                     b.Navigation("Author");
                 });
@@ -151,6 +187,25 @@ namespace Todean_Daiana_Lab2.Migrations
                     b.Navigation("Customer");
                 });
 
+            modelBuilder.Entity("Todean_Daiana_Lab2.Models.PublishedBook", b =>
+                {
+                    b.HasOne("Todean_Daiana_Lab2.Models.Book", "Book")
+                        .WithMany("PublishedBooks")
+                        .HasForeignKey("BookID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Todean_Daiana_Lab2.Models.Publisher", "Publisher")
+                        .WithMany("PublishedBooks")
+                        .HasForeignKey("PublisherID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Book");
+
+                    b.Navigation("Publisher");
+                });
+
             modelBuilder.Entity("Todean_Daiana_Lab2.Models.Author", b =>
                 {
                     b.Navigation("Books");
@@ -159,11 +214,18 @@ namespace Todean_Daiana_Lab2.Migrations
             modelBuilder.Entity("Todean_Daiana_Lab2.Models.Book", b =>
                 {
                     b.Navigation("Orders");
+
+                    b.Navigation("PublishedBooks");
                 });
 
             modelBuilder.Entity("Todean_Daiana_Lab2.Models.Customer", b =>
                 {
                     b.Navigation("Orders");
+                });
+
+            modelBuilder.Entity("Todean_Daiana_Lab2.Models.Publisher", b =>
+                {
+                    b.Navigation("PublishedBooks");
                 });
 #pragma warning restore 612, 618
         }
